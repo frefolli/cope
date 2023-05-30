@@ -26,7 +26,8 @@ options:
 
 ## Example
 
-There's an example of votes csv file: `votes.csv`. Decide a vote in range `[0, 32]` and run against it with `cope [-f votes.csv] <vote>`.
+There's an example of votes csv file: `votes.csv`.
+Decide a vote in range `[0, 32]` and run against it with `cope [-f votes.csv] <vote>`.
 Default vote is `24`, while default file is `votes.csv`.
 
 NO SPOILERS
