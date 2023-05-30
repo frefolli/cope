@@ -131,23 +131,24 @@ def say(p: float) -> str:
     else: # p >= 0.55
         return gcwrap(random.choice(GOOD))
 
-def cope(votes, vote) -> None:
-    p = perc(votes, vote)
-    print("arithmetic mean is %s" % amean(votes))
-    print("geometic mean is %s" % gmean(votes))
-    print("harmonic mean is %s" % hmean(votes))
-    print("your vote is %s" % vote)
-    print()
-    print("better than average %s%% of students" % (100 * p))
-    print("worse than average %s%% of students" % (100 * (1 - p)))
-    print()
-    print(say(p))
-
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(prog="cope", description="coping utility")
     argparser.add_argument("-f", "--file", default="votes.csv", type=str, help="path of a csv file with columns (StudentID: int, Vote: int)")
     argparser.add_argument("vote", type=int, default=24, nargs='?', help="your vote")
+    argparser.add_argument("-q", "--quiet", default=False, action="store_true", help="don't show statistics")
     config = argparser.parse_args(sys.argv[1:])
     votes = vread(config.file)
-    cope(votes, config.vote)
 
+    p = perc(votes, config.vote)
+
+    if not config.quiet:
+        print("arithmetic mean is %s" % amean(votes))
+        print("geometic mean is %s" % gmean(votes))
+        print("harmonic mean is %s" % hmean(votes))
+        print()
+        print("your vote is %s" % config.vote)
+        print()
+        print("better than average %s%% of students" % (100 * p))
+        print("worse than average %s%% of students" % (100 * (1 - p)))
+        print()
+    print(say(p))
