@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+
+import enum
+import sys
+import argparse
+import random
+
+BAD = [
+    "L + ratio + fatherless",
+    "cope"
+]
+
+OK = [
+    "u may not cope",
+    "u may cope"
+]
+
+GOOD = [
+    "nice cock",
+    "zao shang hao, zhong guo\nxian zai wo you bing qilin\nwo hen xi huan bing qilin"
+]
+
+def vread(filepath: str) -> list[tuple[int, int]]:
+    with open(filepath, mode="r", encoding="utf-8") as file:
+        return [ [ int(_.strip()) for _ in line.split(",") ] for line in file.read().strip().split('\n')[1:] ]
+
+def prod(arr: list[int]) -> int:
+    if len(arr) == 0:
+        return 0
+    n = 1
+    for i in arr:
+        assert i >= 0
+        n *= i
+    return n
+
+def isum(arr: list[int]) -> int:
+    if len(arr) == 0:
+        return 1
+    n = 0
+    for i in arr:
+        assert i > 0
+        n += 1 / i
+    return n
+
+def amean(votes) -> float:
+    arr = [voto for (matricola, voto) in votes]
+    return sum(arr)/len(arr)
+
+def gmean(votes) -> float:
+    arr = [voto for (matricola, voto) in votes]
+    return pow(prod(arr), 1 / len(arr))
+
+def hmean(votes) -> float:
+    arr = [voto for (matricola, voto) in votes]
+    return len(arr) / isum(arr)
+
+def dist(votes) -> dict[int, int]:
+    arr = [voto for (matricola, voto) in votes]
+    d = {}
+    for voto in arr:
+        if voto not in d:
+            d[voto] = 0
+        d[voto] += 1
+    return d
+
+def perc(votes, voto) -> float:
+    arr = sorted([voto for (matricola, voto) in votes])
+    pfr, pfl = len(arr) - 1, 0
+    while(pfl < len(arr) and arr[pfl] < voto):
+        pfl += 1
+    while(pfr > -1 and arr[pfr] > voto):
+        pfr -= 1
+    mid = ((pfr + pfl) / 2)
+    p = mid / len(arr)
+    if p < 0:
+        return 0
+    if p > 1:
+        return 1
+    return p
+
+class Color(enum.Enum):
+    Black = 0
+    Red = 1
+    Green = 2
+    Yellow = 3
+    Blue = 4
+    Magenta = 5
+    Cyan = 6
+    White = 7
+    Reset = 8
+
+    def code(self) -> str:
+        match self:
+            case Color.Black: 
+                return '\u001b[30m'
+            case Color.Red:
+                return '\u001b[31m'
+            case Color.Green:
+                return '\u001b[32m'
+            case Color.Yellow:
+                return '\u001b[33m'
+            case Color.Blue:
+                return '\u001b[34m'
+            case Color.Magenta:
+                return '\u001b[35m'
+            case Color.Cyan:
+                return '\u001b[36m'
+            case Color.White:
+                return '\u001b[37m'
+            case Color.Reset:
+                return '\u001b[0m'
+
+
+def cwrap(text: str, color: Color) -> str:
+    return color.code() + text + Color.Reset.code()
+
+def rcwrap(text: str) -> str:
+    return cwrap(text, Color.Red)
+
+def bcwrap(text: str) -> str:
+    return cwrap(text, Color.Blue)
+
+def gcwrap(text: str) -> str:
+    return cwrap(text, Color.Green)
+
+def say(p: float) -> str:
+    if p >= 0 and p < 0.45:
+        return rcwrap(random.choice(BAD))
+    if p >= 0.45 and p < 0.55:
+        return bcwrap(random.choice(OK))
+    else: # p >= 0.55
+        return gcwrap(random.choice(GOOD))
+
+def cope(votes, vote) -> None:
+    p = perc(votes, vote)
+    print("arithmetic mean is %s" % amean(votes))
+    print("geometic mean is %s" % gmean(votes))
+    print("harmonic mean is %s" % hmean(votes))
+    print("your vote is %s" % vote)
+    print()
+    print("better than average %s%% of students" % (100 * p))
+    print("worse than average %s%% of students" % (100 * (1 - p)))
+    print()
+    print(say(p))
+
+if __name__ == "__main__":
+    argparser = argparse.ArgumentParser(prog="cope", description="coping utility")
+    argparser.add_argument("-f", "--file", default="votes.csv", type=str, help="path of a csv file with columns (StudentID: int, Vote: int)")
+    argparser.add_argument("vote", type=int, default=24, nargs='?', help="your vote")
+    config = argparser.parse_args(sys.argv[1:])
+    votes = vread(config.file)
+    cope(votes, config.vote)
+
